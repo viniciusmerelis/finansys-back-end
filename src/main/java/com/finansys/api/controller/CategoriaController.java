@@ -2,6 +2,7 @@ package com.finansys.api.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,6 +27,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/categorias")
 public class CategoriaController {
 
+	@Autowired
 	private CategoriaRepository categoriaRepository;
 
 	@GetMapping
@@ -35,13 +37,14 @@ public class CategoriaController {
 
 	@GetMapping("/{categoriaId}")
 	public ResponseEntity<Categoria> buscarPeloId(@PathVariable Long categoriaId) {
-		return categoriaRepository.findById(categoriaId).map(categoria -> ResponseEntity.ok(categoria))
+		return categoriaRepository.findById(categoriaId)
+				.map(categoria -> ResponseEntity.ok(categoria))
 				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Categoria adicionar(@RequestBody Categoria categoria) {
+	public Categoria salvar(@RequestBody Categoria categoria) {
 		return categoriaRepository.save(categoria);
 	}
 

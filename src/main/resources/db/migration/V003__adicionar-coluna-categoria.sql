@@ -1,0 +1,1 @@
+alter table lancamento add column categoria_id bigint not null;
