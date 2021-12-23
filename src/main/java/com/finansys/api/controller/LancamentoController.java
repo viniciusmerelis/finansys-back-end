@@ -2,6 +2,7 @@ package com.finansys.api.controller;
 
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.finansys.domain.exception.EntidadeNaoEncontradaException;
+import com.finansys.domain.exception.NegocioException;
 import com.finansys.domain.model.Lancamento;
 import com.finansys.domain.repository.LancamentoRepository;
 import com.finansys.domain.service.LancamentoService;
@@ -53,13 +56,14 @@ public class LancamentoController {
 	}
 	
 	@PutMapping("/{lancamentoId}")
-	public ResponseEntity<Lancamento> atualizar(@PathVariable Long lancamentoId, @RequestBody Lancamento lancamento) {
-		if (!lancamentoRespository.existsById(lancamentoId)) {
-			return ResponseEntity.notFound().build();
+	public Lancamento atualizar(@PathVariable Long lancamentoId, @RequestBody Lancamento lancamento) {
+		try {
+			Lancamento lancamentoAtual = lancamentoService.buscarOuFalhar(lancamentoId);
+			BeanUtils.copyProperties(lancamento, lancamentoAtual, "id");
+			return lancamentoService.salvar(lancamentoAtual);
+		} catch (EntidadeNaoEncontradaException e) {
+			throw new NegocioException(e.getMessage());
 		}
-		lancamento.setId(lancamentoId);
-		lancamentoRespository.save(lancamento);
-		return ResponseEntity.ok(lancamento);
 	}
 	
 	@DeleteMapping("/{lancamentoId}")

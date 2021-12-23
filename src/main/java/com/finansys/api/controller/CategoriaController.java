@@ -2,6 +2,7 @@ package com.finansys.api.controller;
 
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.finansys.domain.exception.EntidadeNaoEncontradaException;
+import com.finansys.domain.exception.NegocioException;
 import com.finansys.domain.model.Categoria;
 import com.finansys.domain.repository.CategoriaRepository;
+import com.finansys.domain.service.CategoriaService;
 
 import lombok.AllArgsConstructor;
 
@@ -29,6 +33,9 @@ public class CategoriaController {
 
 	@Autowired
 	private CategoriaRepository categoriaRepository;
+	
+	@Autowired
+	private CategoriaService categoriaService;
 
 	@GetMapping
 	public List<Categoria> listar() {
@@ -49,13 +56,14 @@ public class CategoriaController {
 	}
 
 	@PutMapping("/{categoriaId}")
-	public ResponseEntity<Categoria> atualizar(@PathVariable Long categoriaId, @RequestBody Categoria categoria) {
-		if (!categoriaRepository.existsById(categoriaId)) {
-			return ResponseEntity.notFound().build();
+	public Categoria atualizar(@PathVariable Long categoriaId, @RequestBody Categoria categoria) {
+		try {
+			Categoria categoriaAtual = categoriaService.buscarOuFalhar(categoriaId);
+			BeanUtils.copyProperties(categoria, categoriaAtual, "id");
+			return categoriaService.salvar(categoriaAtual);
+		} catch (EntidadeNaoEncontradaException e) {
+			throw new NegocioException(e.getMessage());
 		}
-		categoria.setId(categoriaId);
-		categoriaRepository.save(categoria);
-		return ResponseEntity.ok(categoria);
 	}
 
 	@DeleteMapping("/{categoriaId}")
