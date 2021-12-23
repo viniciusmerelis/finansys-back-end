@@ -31,7 +31,7 @@ public class Lancamento {
 	@Column(nullable = false)
 	private String nome;
 	
-	@Column(nullable = false)
+	@Column
 	private String descricao;
 	
 	@Enumerated(value = EnumType.ORDINAL)
