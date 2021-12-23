@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,6 +34,7 @@ public class Lancamento {
 	@Column(nullable = false)
 	private String descricao;
 	
+	@Enumerated(value = EnumType.ORDINAL)
 	@Column(nullable = false)
 	private TipoLancamento tipoLancamento;
 	
@@ -39,10 +42,10 @@ public class Lancamento {
 	private BigDecimal valor;
 	
 	@Column(nullable = false)
-	private LocalDateTime data;
+	private LocalDateTime dataLancamento;
 	
 	@Column(nullable = false)
-	private Boolean status;
+	private Boolean statusLancamento;
 	
 	@ManyToOne
 	@JoinColumn(name = "categoriaId", nullable = false)
