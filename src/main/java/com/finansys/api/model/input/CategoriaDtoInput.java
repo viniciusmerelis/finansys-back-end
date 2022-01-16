@@ -1,12 +1,16 @@
 package com.finansys.api.model.input;
 
-import org.springframework.stereotype.Component;
+import javax.validation.constraints.NotNull;
 
-@Component
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class CategoriaDtoInput {
 
+	@NotNull
 	private String nome;
-	
 	private String descricao;
 	
 }

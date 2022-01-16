@@ -1,5 +1,7 @@
 package com.finansys.api.model.input;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +9,6 @@ import lombok.Setter;
 @Setter
 public class CategoriaDtoIdInput {
 	
-	
+	@NotNull
 	private Long id;
 }
