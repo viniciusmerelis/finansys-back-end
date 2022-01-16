@@ -1,5 +1,6 @@
 package com.finansys.domain.service;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -20,6 +21,11 @@ public class CategoriaService {
 	
 	public Categoria salvar(Categoria categoria) {
 		return categoriaRepository.save(categoria);
+	}
+	
+	public Categoria atualizar(Categoria categoria, Categoria categoriaAtual) {
+		BeanUtils.copyProperties(categoria, categoriaAtual, "id");
+		return categoriaRepository.save(categoriaAtual);
 	}
 	
 	public void excluir(Long categoriaId) {

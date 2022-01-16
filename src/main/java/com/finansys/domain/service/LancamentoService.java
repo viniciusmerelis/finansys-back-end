@@ -1,5 +1,6 @@
 package com.finansys.domain.service;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,11 @@ public class LancamentoService {
 		Categoria categoria = categoriaService.buscarOuFalhar(categoriaId);
 		lancamento.setCategoria(categoria);
 		return lancamentoRespository.save(lancamento);
+	}
+	
+	public Lancamento atualizar(Lancamento lancamento, Lancamento lancamentoAtual) {
+		BeanUtils.copyProperties(lancamento, lancamentoAtual, "id");
+		return salvar(lancamentoAtual);
 	}
 	
 	public Lancamento buscarOuFalhar(Long lancamentoId) {

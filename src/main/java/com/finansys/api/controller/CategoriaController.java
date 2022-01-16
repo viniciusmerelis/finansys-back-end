@@ -2,7 +2,6 @@ package com.finansys.api.controller;
 
 import java.util.List;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.finansys.domain.exception.EntidadeNaoEncontradaException;
-import com.finansys.domain.exception.NegocioException;
+import com.finansys.api.assembler.CategoriaDtoAssembler;
+import com.finansys.api.assembler.disassembler.CategoriaDtoInputDisassembler;
+import com.finansys.api.model.CategoriaDto;
+import com.finansys.api.model.input.CategoriaDtoInput;
 import com.finansys.domain.model.Categoria;
 import com.finansys.domain.repository.CategoriaRepository;
 import com.finansys.domain.service.CategoriaService;
@@ -36,6 +37,12 @@ public class CategoriaController {
 	
 	@Autowired
 	private CategoriaService categoriaService;
+	
+	@Autowired
+	private CategoriaDtoAssembler categoriaDtoAssembler;
+	
+	@Autowired
+	private CategoriaDtoInputDisassembler categoriaDtoDisassembler;
 
 	@GetMapping
 	public List<Categoria> listar() {
@@ -56,14 +63,11 @@ public class CategoriaController {
 	}
 
 	@PutMapping("/{categoriaId}")
-	public Categoria atualizar(@PathVariable Long categoriaId, @RequestBody Categoria categoria) {
-		try {
+	public CategoriaDto atualizar(@PathVariable Long categoriaId, @RequestBody CategoriaDtoInput categoriaDtoInput) {
 			Categoria categoriaAtual = categoriaService.buscarOuFalhar(categoriaId);
-			BeanUtils.copyProperties(categoria, categoriaAtual, "id");
-			return categoriaService.salvar(categoriaAtual);
-		} catch (EntidadeNaoEncontradaException e) {
-			throw new NegocioException(e.getMessage());
-		}
+			Categoria categoria = categoriaDtoDisassembler.toDomainObject(categoriaDtoInput);
+			categoriaAtual = categoriaService.atualizar(categoria, categoriaAtual);
+			return categoriaDtoAssembler.toDto(categoriaAtual);
 	}
 
 	@DeleteMapping("/{categoriaId}")
