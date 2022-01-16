@@ -3,7 +3,6 @@ package com.finansys.api.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.finansys.api.model.input.CategoriaDtoIdInput;
 import com.finansys.domain.model.TipoLancamento;
 
 import lombok.Getter;
@@ -20,6 +19,6 @@ public class LancamentoDto {
 	private BigDecimal valor;
 	private LocalDateTime dataLancamento;
 	private Boolean statusLancamento;
-	private CategoriaDtoIdInput categoria;
+	private CategoriaDto categoria;
 	
 }

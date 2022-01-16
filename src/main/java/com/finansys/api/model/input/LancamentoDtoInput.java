@@ -6,12 +6,14 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
-import org.springframework.stereotype.Component;
-
 import com.finansys.domain.model.TipoLancamento;
 
+import lombok.Getter;
+import lombok.Setter;
 
-@Component
+
+@Getter
+@Setter
 public class LancamentoDtoInput {
 
 	@NotNull
