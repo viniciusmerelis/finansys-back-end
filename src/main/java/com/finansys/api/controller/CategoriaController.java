@@ -3,8 +3,6 @@ package com.finansys.api.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.finansys.api.assembler.CategoriaDtoAssembler;
@@ -45,21 +42,22 @@ public class CategoriaController {
 	private CategoriaDtoInputDisassembler categoriaDtoDisassembler;
 
 	@GetMapping
-	public List<Categoria> listar() {
-		return categoriaRepository.findAll();
+	public List<CategoriaDto> listar() {
+		List<Categoria> categorias = categoriaRepository.findAll();
+		return categoriaDtoAssembler.toCollectionDto(categorias);
 	}
 
 	@GetMapping("/{categoriaId}")
-	public ResponseEntity<Categoria> buscarPeloId(@PathVariable Long categoriaId) {
-		return categoriaRepository.findById(categoriaId)
-				.map(categoria -> ResponseEntity.ok(categoria))
-				.orElse(ResponseEntity.notFound().build());
+	public CategoriaDto buscarPeloId(@PathVariable Long categoriaId) {
+		Categoria categoria = categoriaService.buscarOuFalhar(categoriaId);
+		return categoriaDtoAssembler.toDto(categoria);
 	}
 
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public Categoria salvar(@RequestBody Categoria categoria) {
-		return categoriaRepository.save(categoria);
+	public CategoriaDto adicionar(@RequestBody CategoriaDtoInput categoriaDtoInput) {
+		Categoria categoria = categoriaDtoDisassembler.toDomainObject(categoriaDtoInput);
+		categoria = categoriaService.salvar(categoria);
+		return categoriaDtoAssembler.toDto(categoria);
 	}
 
 	@PutMapping("/{categoriaId}")
@@ -71,12 +69,8 @@ public class CategoriaController {
 	}
 
 	@DeleteMapping("/{categoriaId}")
-	public ResponseEntity<Void> deletar(@PathVariable Long categoriaId) {
-		if (!categoriaRepository.existsById(categoriaId)) {
-			return ResponseEntity.notFound().build();
-		}
-		categoriaRepository.deleteById(categoriaId);
-		return ResponseEntity.noContent().build();
+	public void deletar(@PathVariable Long categoriaId) {
+		categoriaService.excluir(categoriaId);
 	}
 
 }

@@ -2,10 +2,7 @@ package com.finansys.api.controller;
 
 import java.util.List;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.finansys.domain.exception.EntidadeNaoEncontradaException;
+import com.finansys.api.assembler.LancamentoDtoAssembler;
+import com.finansys.api.assembler.disassembler.LancamentoDtoInputDisassembler;
+import com.finansys.api.model.LancamentoDto;
+import com.finansys.api.model.input.LancamentoDtoInput;
+import com.finansys.domain.exception.CategoriaNaoEncontradaException;
 import com.finansys.domain.exception.NegocioException;
 import com.finansys.domain.model.Lancamento;
 import com.finansys.domain.repository.LancamentoRepository;
@@ -37,41 +37,49 @@ public class LancamentoController {
 	@Autowired
 	private LancamentoService lancamentoService;
 	
+	@Autowired
+	private LancamentoDtoAssembler lancamentoDtoAssembler;
+	
+	@Autowired
+	private LancamentoDtoInputDisassembler lancamentoDtoDisassembler;
+	
 	@GetMapping
-	public List<Lancamento> listar() {
-		return lancamentoRespository.findAll();
+	public List<LancamentoDto> listar() {
+		List<Lancamento> lancamentos = lancamentoRespository.findAll();
+		return lancamentoDtoAssembler.toCollectionDto(lancamentos);
 	}
 	
 	@GetMapping("/{lancamentoId}")
-	public ResponseEntity<Lancamento> buscarPeloId(@PathVariable Long lancamentoId) {
-		return lancamentoRespository.findById(lancamentoId)
-				.map(lancamento -> ResponseEntity.ok(lancamento))
-				.orElse(ResponseEntity.notFound().build());
+	public LancamentoDto buscarPeloId(@PathVariable Long lancamentoId) {
+		Lancamento lancamento = lancamentoService.buscarOuFalhar(lancamentoId);
+		return lancamentoDtoAssembler.toDto(lancamento);
 	}
 	
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public Lancamento salvar(@RequestBody Lancamento lancamento) {
-		return lancamentoService.salvar(lancamento);
+	public LancamentoDto adicionar(@RequestBody LancamentoDtoInput lancamentoDtoInput) {
+		try {
+			Lancamento lancamento = lancamentoDtoDisassembler.toDomainObject(lancamentoDtoInput);
+			lancamento = lancamentoService.salvar(lancamento);
+			return lancamentoDtoAssembler.toDto(lancamento);
+		} catch (CategoriaNaoEncontradaException e) {
+			throw new NegocioException(e.getMessage());
+		}
 	}
 	
 	@PutMapping("/{lancamentoId}")
-	public Lancamento atualizar(@PathVariable Long lancamentoId, @RequestBody Lancamento lancamento) {
+	public LancamentoDto atualizar(@PathVariable Long lancamentoId, @RequestBody LancamentoDtoInput lancamentoDtoInput) {
 		try {
 			Lancamento lancamentoAtual = lancamentoService.buscarOuFalhar(lancamentoId);
-			BeanUtils.copyProperties(lancamento, lancamentoAtual, "id");
-			return lancamentoService.salvar(lancamentoAtual);
-		} catch (EntidadeNaoEncontradaException e) {
+			Lancamento lancamento = lancamentoDtoDisassembler.toDomainObject(lancamentoDtoInput);
+			lancamento = lancamentoService.atualizar(lancamento, lancamentoAtual);
+			return lancamentoDtoAssembler.toDto(lancamento);
+		} catch (CategoriaNaoEncontradaException e) {
 			throw new NegocioException(e.getMessage());
 		}
 	}
 	
 	@DeleteMapping("/{lancamentoId}")
-	public ResponseEntity<Void> deletar(@PathVariable Long lancamentoId) {
-		if (!lancamentoRespository.existsById(lancamentoId)) {
-			return ResponseEntity.notFound().build();
-		}
-		lancamentoRespository.deleteById(lancamentoId);
-		return ResponseEntity.noContent().build();
+	public void deletar(@PathVariable Long lancamentoId) {
+		lancamentoService.excluir(lancamentoId);
 	}
 }

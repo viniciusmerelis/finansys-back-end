@@ -30,6 +30,10 @@ public class LancamentoService {
 		return salvar(lancamentoAtual);
 	}
 	
+	public void excluir(Long lancamentoId) {
+		lancamentoRespository.deleteById(lancamentoId);
+	}
+	
 	public Lancamento buscarOuFalhar(Long lancamentoId) {
 		return lancamentoRespository.findById(lancamentoId)
 				.orElseThrow(() -> new LancamentoNaoEncontradoException(lancamentoId));
